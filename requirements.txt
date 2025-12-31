@@ -1,0 +1,5 @@
+# Runtime dependencies
+Flask==2.3.3
+
+# Development dependencies
+uv>=0.9.0

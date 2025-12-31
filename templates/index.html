@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Todo App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-tasks"></i> Todo Web App</h1>
+            <div class="theme-toggle">
+                <button id="theme-toggle" class="btn btn-icon">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="stats-bar">
+            <div class="progress-container">
+                <div class="progress-label">Completion: {{ completion_percentage }}%</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ completion_percentage }}%"></div>
+                </div>
+            </div>
+            <div class="stats">
+                <span class="stat-item">Total: {{ todos|length }}</span>
+                <span class="stat-item">Completed: {{ todos|selectattr('completed', 'equalto', true)|list|length }}</span>
+                <span class="stat-item">Pending: {{ todos|selectattr('completed', 'equalto', false)|list|length }}</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <form id="add-form" class="add-form">
+                <div class="form-row">
+                    <input type="text" id="task-input" placeholder="Enter a new task..." required>
+                    <input type="date" id="due-date-input">
+                    <select id="priority-input">
+                        <option value="low">Low Priority</option>
+                        <option value="medium" selected>Medium Priority</option>
+                        <option value="high">High Priority</option>
+                    </select>
+                    <input type="text" id="category-input" placeholder="Category (optional)">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="active">Active</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+            <div class="export-section">
+                <button id="export-btn" class="btn btn-secondary">
+                    <i class="fas fa-file-export"></i> Export CSV
+                </button>
+            </div>
+        </div>
+
+        <div class="todos-container">
+            <ul id="todos-list" class="todos-list">
+                {% for todo in todos %}
+                <li class="todo-item {{ 'completed' if todo.completed else '' }}"
+                    data-id="{{ todo.id }}"
+                    data-priority="{{ todo.priority }}"
+                    data-category="{{ todo.category }}">
+                    <div class="todo-content">
+                        <div class="todo-checkbox">
+                            <input type="checkbox" id="todo-{{ todo.id }}"
+                                   {% if todo.completed %}checked{% endif %}
+                                   class="todo-checkbox-input">
+                            <label for="todo-{{ todo.id }}" class="todo-checkbox-label"></label>
+                        </div>
+                        <div class="todo-text-container">
+                            <span class="todo-text {{ 'completed-text' if todo.completed else '' }}">{{ todo.task }}</span>
+                            {% if todo.due_date %}
+                                <span class="todo-due-date">
+                                    <i class="fas fa-calendar-day"></i>
+                                    {{ todo.due_date }}
+                                </span>
+                            {% endif %}
+                            {% if todo.category %}
+                                <span class="todo-category" data-category="{{ todo.category }}">
+                                    {{ todo.category }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="todo-priority priority-{{ todo.priority }}">
+                            <i class="fas fa-flag"></i>
+                        </div>
+                        <div class="todo-actions">
+                            <button class="btn btn-icon btn-edit" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-icon btn-delete" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {% if not todos %}
+        <div class="empty-state">
+            <i class="fas fa-clipboard-list"></i>
+            <h3>No tasks yet</h3>
+            <p>Add a new task to get started!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Edit Task</h2>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label for="edit-task">Task:</label>
+                    <input type="text" id="edit-task" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-due-date">Due Date:</label>
+                    <input type="date" id="edit-due-date">
+                </div>
+                <div class="form-group">
+                    <label for="edit-priority">Priority:</label>
+                    <select id="edit-priority">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-category">Category:</label>
+                    <input type="text" id="edit-category" placeholder="Enter category">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-secondary cancel-edit">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
